@@ -20,6 +20,7 @@ return(
 <Route path="/home" element={<Home/>}/>
 <Route path="/wishlist" element={<Wishlist/>}/>
 <Route path="/movie/:id" element={<MovieDetails/>}/>
+<Route path="/signup" element={<Signup />} />
 
 </Routes>
 
