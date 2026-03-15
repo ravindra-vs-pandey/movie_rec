@@ -5,7 +5,6 @@ import MovieCard from "../components/MovieCard"
 import Navbar from "../components/Navbar"
 import { db } from "../firebase/firebaseConfig"
 import { doc, setDoc } from "firebase/firestore"
-import "../app.css"
 
 const API_KEY = "6e25ca20"
 

@@ -2,7 +2,6 @@ import { useState } from "react"
 import { db } from "../firebase/firebaseConfig"
 import { doc, setDoc } from "firebase/firestore"
 import { useNavigate } from "react-router-dom"
-import "../app.css"
 
 function Signup() {
   const [username, setUsername] = useState("")

@@ -2,7 +2,6 @@ import { useState } from "react"
 import { db } from "../firebase/firebaseConfig"
 import { doc, getDoc } from "firebase/firestore"
 import { useNavigate } from "react-router-dom"
-import "../app.css"
 
 function Login() {
   const [username, setUsername] = useState("")
@@ -76,7 +75,7 @@ function Login() {
 
         <p className="auth-footer">
           Don't have an account?
-          <a href="/signup">Create one</a>
+          <a href="/register">Create one</a>
         </p>
       </div>
     </div>

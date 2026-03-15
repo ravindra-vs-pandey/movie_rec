@@ -2,7 +2,6 @@ import { useEffect, useState } from "react"
 import { db } from "../firebase/firebaseConfig"
 import { collection, getDocs, doc, deleteDoc } from "firebase/firestore"
 import Navbar from "../components/Navbar"
-import "../app.css"
 
 function Wishlist() {
   const [movies, setMovies] = useState([])
