@@ -75,7 +75,7 @@ function Login() {
 
         <p className="auth-footer">
           Don't have an account?
-          <a href="/register">Create one</a>
+          <a href="/signup">Create one</a>
         </p>
       </div>
     </div>
