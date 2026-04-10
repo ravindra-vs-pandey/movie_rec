@@ -1,6 +1,5 @@
 import { useState } from "react"
-import { db } from "../firebase/firebaseConfig"
-import { doc, getDoc } from "firebase/firestore"
+import axios from "axios"
 import { useNavigate } from "react-router-dom"
 
 function Login() {
@@ -12,21 +11,27 @@ function Login() {
   const login = async () => {
     setLoading(true)
     try {
-      const userRef = doc(db, "users", username)
-      const userSnap = await getDoc(userRef)
+      const res = await axios.post("http://localhost:5000/login", {
+        username,
+        password,
+      })
 
-      if (userSnap.exists()) {
-        const data = userSnap.data()
-        if (data.password === password) {
-          localStorage.setItem("username", username)
-          localStorage.setItem("displayName", data.displayName)
-          navigate("/home")
-        } else {
-          alert("Wrong password")
-        }
+      if (res.data.msg === "Login success") {
+        // ✅ store user data
+        localStorage.setItem("username", res.data.user.username)
+        localStorage.setItem("displayName", res.data.user.displayName)
+
+        // 🔐 store JWT token
+        localStorage.setItem("token", res.data.token)
+
+        navigate("/home")
       } else {
-        alert("User not found")
+        alert(res.data.msg)
       }
+
+    } catch (err) {
+      console.log("Login error:", err)
+      alert("Login failed")
     } finally {
       setLoading(false)
     }
@@ -47,9 +52,10 @@ function Login() {
           <input
             className="auth-input"
             placeholder="Username"
-            onChange={(e) => setUsername(e.target.value)}
+            onChange={(e) => setUsername(e.target.value.trim())}
             autoComplete="username"
           />
+
           <input
             className="auth-input"
             type="password"
@@ -58,6 +64,7 @@ function Login() {
             onKeyDown={(e) => e.key === "Enter" && login()}
             autoComplete="current-password"
           />
+
           <button
             className="auth-btn"
             onClick={login}
@@ -69,8 +76,12 @@ function Login() {
 
         <div className="auth-demo">
           <span className="auth-demo__label">Demo account</span>
-          <span className="auth-demo__cred">username: <strong>ravindra</strong></span>
-          <span className="auth-demo__cred">password: <strong>1234</strong></span>
+          <span className="auth-demo__cred">
+            username: <strong>ravindra</strong>
+          </span>
+          <span className="auth-demo__cred">
+            password: <strong>1234</strong>
+          </span>
         </div>
 
         <p className="auth-footer">

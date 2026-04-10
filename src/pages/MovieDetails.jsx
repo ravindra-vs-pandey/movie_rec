@@ -51,6 +51,19 @@ function MovieDetails() {
         </div>
       </div>
 
+      <button
+  className="button"
+  onClick={()=>{
+    const query = movie.Title + " trailer"
+    window.open(
+      `https://www.youtube.com/results?search_query=${query}`,
+      "_blank"
+    )
+  }}
+>
+  ▶ Watch Trailer
+</button>
+
       <div className="details-body">
         <p className="details-plot">{movie.Plot}</p>
 

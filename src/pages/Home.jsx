@@ -3,8 +3,6 @@ import axios from "axios"
 import SearchBar from "../components/SearchBar"
 import MovieCard from "../components/MovieCard"
 import Navbar from "../components/Navbar"
-import { db } from "../firebase/firebaseConfig"
-import { doc, setDoc } from "firebase/firestore"
 
 const API_KEY = "6e25ca20"
 
@@ -12,18 +10,29 @@ function Home() {
   const [movies, setMovies] = useState([])
   const [suggestions, setSuggestions] = useState([])
 
+  const token = localStorage.getItem("token")
+  const username = localStorage.getItem("username")
+
   const searchMovies = async (query) => {
-    const res = await axios.get(
-      `https://www.omdbapi.com/?apikey=${API_KEY}&s=${query}`
-    )
-    if (res.data.Search) setMovies(res.data.Search)
+    try {
+      const res = await axios.get(
+        `https://www.omdbapi.com/?apikey=${API_KEY}&s=${query}`
+      )
+      if (res.data.Search) setMovies(res.data.Search)
+    } catch (err) {
+      console.log("Search error:", err)
+    }
   }
 
   const getLatestMovies = async () => {
-    const res = await axios.get(
-      `https://www.omdbapi.com/?apikey=${API_KEY}&s=2024&type=movie`
-    )
-    if (res.data.Search) setSuggestions(res.data.Search)
+    try {
+      const res = await axios.get(
+        `https://www.omdbapi.com/?apikey=${API_KEY}&s=2024&type=movie`
+      )
+      if (res.data.Search) setSuggestions(res.data.Search)
+    } catch (err) {
+      console.log("Fetch error:", err)
+    }
   }
 
   useEffect(() => {
@@ -31,11 +40,32 @@ function Home() {
   }, [])
 
   const addToWishlist = async (movie) => {
-    const username = localStorage.getItem("username")
-    await setDoc(
-      doc(db, "users", username, "wishlist", movie.imdbID),
-      movie
-    )
+    try {
+      const res = await axios.post(
+        "http://localhost:5000/wishlist/add",
+        {
+          username,
+          movie,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // 🔐 JWT added
+          },
+        }
+      )
+
+      console.log(res.data)
+
+      if (res.data.msg === "Added") {
+        alert("Added to wishlist")
+      } else {
+        alert(res.data.msg)
+      }
+
+    } catch (err) {
+      console.log("Wishlist add error:", err)
+      alert("Failed to add")
+    }
   }
 
   return (
@@ -70,6 +100,7 @@ function Home() {
             <span className="section__title">Latest Movies</span>
             <div className="section__line" />
           </div>
+
           {suggestions.length > 0 ? (
             <div className="movies-grid">
               {suggestions.map((movie) => (

@@ -1,6 +1,5 @@
 import { useState } from "react"
-import { db } from "../firebase/firebaseConfig"
-import { doc, setDoc } from "firebase/firestore"
+import axios from "axios"
 import { useNavigate } from "react-router-dom"
 
 function Signup() {
@@ -14,13 +13,22 @@ function Signup() {
   const signup = async () => {
     setLoading(true)
     try {
-      await setDoc(doc(db, "users", username), {
+      const res = await axios.post("http://localhost:5000/signup", {
         username,
         password,
         displayName,
       })
+
+      if (res.data.msg === "User exists") {
+        alert("Username already exists")
+        return
+      }
+
       setDone(true)
       setTimeout(() => navigate("/"), 1800)
+    } catch (err) {
+      console.log(err)
+      alert("Error creating account")
     } finally {
       setLoading(false)
     }

@@ -1,19 +1,31 @@
 import { useEffect, useState } from "react"
-import { db } from "../firebase/firebaseConfig"
-import { collection, getDocs, doc, deleteDoc } from "firebase/firestore"
+import axios from "axios"
 import Navbar from "../components/Navbar"
 
 function Wishlist() {
   const [movies, setMovies] = useState([])
+
   const username = localStorage.getItem("username")
+  const token = localStorage.getItem("token")
 
   const loadWishlist = async () => {
-    const querySnapshot = await getDocs(
-      collection(db, "users", username, "wishlist")
-    )
-    const list = []
-    querySnapshot.forEach((docu) => list.push(docu.data()))
-    setMovies(list)
+    try {
+      const res = await axios.get(
+        `http://localhost:5000/wishlist/${username}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // 🔐 JWT
+          },
+        }
+      )
+
+      console.log("WISHLIST DATA:", res.data)
+
+      setMovies(res.data)
+
+    } catch (err) {
+      console.log("Fetch error:", err)
+    }
   }
 
   useEffect(() => {
@@ -21,8 +33,25 @@ function Wishlist() {
   }, [])
 
   const removeMovie = async (id) => {
-    await deleteDoc(doc(db, "users", username, "wishlist", id))
-    loadWishlist()
+    try {
+      await axios.post(
+        "http://localhost:5000/wishlist/remove",
+        {
+          username,
+          id,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // 🔐 JWT
+          },
+        }
+      )
+
+      loadWishlist()
+
+    } catch (err) {
+      console.log("Remove error:", err)
+    }
   }
 
   return (
@@ -55,9 +84,72 @@ function Wishlist() {
                     onError={(e) => { e.target.style.opacity = "0.12" }}
                   />
                 </div>
+
                 <div className="wishlist-card__body">
                   <div className="wishlist-card__title">{movie.Title}</div>
                   <div className="wishlist-card__year">{movie.Year}</div>
+
+                  {/* ⭐ Rating */}
+                  <select
+                    defaultValue={movie.rating || 0}
+                    onChange={async (e) => {
+                      try {
+                        await axios.post(
+                          "http://localhost:5000/wishlist/update",
+                          {
+                            username,
+                            id: movie.imdbID,
+                            rating: Number(e.target.value),
+                            note: movie.note || "",
+                          },
+                          {
+                            headers: {
+                              Authorization: `Bearer ${token}`,
+                            },
+                          }
+                        )
+
+                        loadWishlist()
+
+                      } catch (err) {
+                        console.log("Rating error:", err)
+                      }
+                    }}
+                  >
+                    <option value="0">No Rating</option>
+                    <option value="1">⭐ 1</option>
+                    <option value="2">⭐⭐ 2</option>
+                    <option value="3">⭐⭐⭐ 3</option>
+                    <option value="4">⭐⭐⭐⭐ 4</option>
+                    <option value="5">⭐⭐⭐⭐⭐ 5</option>
+                  </select>
+
+                  {/* 💬 Note */}
+                  <input
+                    placeholder="Add note..."
+                    defaultValue={movie.note}
+                    onBlur={async (e) => {
+                      try {
+                        await axios.post(
+                          "http://localhost:5000/wishlist/update",
+                          {
+                            username,
+                            id: movie.imdbID,
+                            rating: movie.rating || 0,
+                            note: e.target.value,
+                          },
+                          {
+                            headers: {
+                              Authorization: `Bearer ${token}`,
+                            },
+                          }
+                        )
+                      } catch (err) {
+                        console.log("Note error:", err)
+                      }
+                    }}
+                  />
+
                   <button
                     className="wishlist-card__remove-btn"
                     onClick={() => removeMovie(movie.imdbID)}
@@ -65,6 +157,7 @@ function Wishlist() {
                     Remove
                   </button>
                 </div>
+
               </div>
             ))}
           </div>
